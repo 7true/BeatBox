@@ -9,6 +9,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import java.util.List;
+
 /**
  * Created by ya on 10.06.17.
  */
@@ -36,20 +38,42 @@ public class BeatBoxFragment extends Fragment {
                 .findViewById(R.id.fragment_beat_box_recycler_view);
         recyclerView.setLayoutManager(new GridLayoutManager
                 (getActivity(), 3));
-        recyclerView.setAdapter(new SoundAdapter());
+        recyclerView.setAdapter(new SoundAdapter(mBeatBox.getSounds()));
         return view;
     }
 
-    private class SoundHolder extends RecyclerView.ViewHolder {
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mBeatBox.release();
+    }
+
+    private class SoundHolder extends RecyclerView.ViewHolder
+     implements View.OnClickListener {
         private Button mButton;
+        private Sound mSound;
         public SoundHolder(LayoutInflater inflater, ViewGroup container) {
             super(inflater.inflate(R.layout.list_item_sound, container,
                     false));
             mButton = (Button)itemView.findViewById(R.id.list_item_sound_button);
+            mButton.setOnClickListener(this);
+        }
+        public void bindSound(Sound sound) {
+            mSound = sound;
+            mButton.setText(mSound.getName());
+        }
+
+        @Override
+        public void onClick(View v) {
+            mBeatBox.play(mSound);
         }
     }
 
     private class SoundAdapter extends RecyclerView.Adapter<SoundHolder> {
+        private List<Sound> mSounds;
+        public SoundAdapter(List<Sound> sounds) {
+            mSounds = sounds;
+        }
         @Override
         public SoundHolder onCreateViewHolder
                 (ViewGroup parent, int viewType) {
@@ -57,12 +81,13 @@ public class BeatBoxFragment extends Fragment {
             return new SoundHolder(inflater, parent);
         }
         @Override
-        public void onBindViewHolder(SoundHolder soundholder, int position) {
-
+        public void onBindViewHolder(SoundHolder soundHolder, int position) {
+            Sound sound = mSounds.get(position);
+            soundHolder.bindSound(sound);
         }
         @Override
         public int getItemCount() {
-            return 0;
+            return mSounds.size();
         }
     }
 
